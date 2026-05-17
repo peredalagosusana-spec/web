@@ -40,6 +40,7 @@ $exe_i18n = {
     "mode_toggler": "Modo claro/oscuro",
     "teacher_mode": "Modo docente",
     "elpxGenerating": "Generando...",
+    "elpxProcessing": "Procesando...",
     "elpxFolderPickerTimeout": "El selector de carpetas no respondió. Esto puede ocurrir al abrir archivos exportados directamente desde tu equipo (protocolo file://). Intenta abrir el archivo a través de un servidor.",
     "elpxFolderPickerEmpty": "El selector de carpetas no encontró archivos. Esta es una limitación conocida al abrir archivos exportados con el protocolo file:// en algunos navegadores. Intenta usar otro navegador o abre el archivo a través de un servidor web.",
     "elpxFileProtocolWarning": "Modo local: debido a la política de seguridad del navegador, tendrás que seleccionar la carpeta desde la que abriste este archivo. En un servidor web esto no será necesario.",
