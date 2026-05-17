@@ -1,1 +1,145 @@
-<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" version="1.1" id="svg1" sodipodi:docname="exequextrerrors.svg" xml:space="preserve"><sodipodi:namedview id="namedview1" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" showgrid="false" fill="#000000"><inkscape:page x="0" y="0" width="20" height="20" id="page2" margin="0" bleed="0" fill="#000000"/></sodipodi:namedview><defs id="defs1" fill="#000000"/><g style="fill:#db404b;fill-opacity:1" id="g38" transform="matrix(0.025,0,0,0.025,-1.9999991,22)"><path d="m 480,-680 q 17,0 28.5,-11.5 Q 520,-703 520,-720 520,-737 508.5,-748.5 497,-760 480,-760 q -17,0 -28.5,11.5 -11.5,11.5 -11.5,28.5 0,17 11.5,28.5 11.5,11.5 28.5,11.5 z m -40,320 h 80 V -600 H 440 Z M 80,-80 v -720 q 0,-33 23.5,-56.5 Q 127,-880 160,-880 h 640 q 33,0 56.5,23.5 23.5,23.5 23.5,56.5 v 480 q 0,33 -23.5,56.5 Q 833,-240 800,-240 H 240 Z M 206,-320 H 800 V -800 H 160 v 525 z m -46,0 v -480 z" id="path1-2" style="fill:#db404b;fill-opacity:1"/></g></svg>
+/**
+ * download-source-file iDevice
+ *
+ * This iDevice displays download link for the source .elpx file.
+ * The actual download functionality is provided by exe_elpx_download.js
+ * which is included automatically when this iDevice is detected.
+ */
+(function() {
+    'use strict';
+    
+    // Sync project properties dynamically when viewed in the eXeLearning Workarea (Editor View).
+    // In export/preview, PageRenderer handles this server-side, and eXe.app will be undefined.
+    function syncProperties() {
+        if (typeof window.eXe === 'undefined' || !window.eXe.app || typeof window.eXe.app.getProjectProperties !== 'function') {
+            return;
+        }
+
+        var props = window.eXe.app.getProjectProperties();
+        if (!props) return;
+
+        // Upgrade legacy iDevices (added before this feature) to have the targetable spans
+        var tables = document.querySelectorAll('table.exe-package-info');
+        for (var t = 0; t < tables.length; t++) {
+            var tds = tables[t].querySelectorAll('td');
+            if (tds.length === 4) {
+                if (tds[0].querySelectorAll('.exe-prop-title').length === 0) tds[0].innerHTML = '<span class="exe-prop-title"></span>';
+                if (tds[1].querySelectorAll('.exe-prop-description').length === 0) tds[1].innerHTML = '<span class="exe-prop-description"></span>';
+                if (tds[2].querySelectorAll('.exe-prop-author').length === 0) tds[2].innerHTML = '<span class="exe-prop-author"></span>';
+                if (tds[3].querySelectorAll('.exe-prop-license').length === 0) tds[3].innerHTML = '<span class="exe-prop-license"></span>';
+            }
+        }
+
+        var title = (props.pp_title && props.pp_title.value) ? props.pp_title.value : '-';
+        var author = (props.pp_author && props.pp_author.value) ? props.pp_author.value : '-';
+        var desc = (props.pp_description && props.pp_description.value) ? props.pp_description.value : '-';
+        var license = (props.pp_license && props.pp_license.value) ? props.pp_license.value : '-';
+
+        var formattedLicense = license;
+        if (license !== '-') {
+            // CC0 uses a publicdomain URL, not the standard licenses/ path
+            if (license.toLowerCase() === 'creative commons: cc0 1.0') {
+                formattedLicense = '<a href="https://creativecommons.org/publicdomain/zero/1.0/" rel="license" class="cc cc-0"><span></span>Creative Commons CC0 1.0</a>';
+            } else if (license === 'propietary license') {
+                formattedLicense = c_('Proprietary license');
+            } else if (license === 'not appropriate') {
+                formattedLicense = c_('Not appropriate');
+            } else if (license === 'public domain') {
+                formattedLicense = c_('Public domain');
+            } else {
+                var licenseMappings = [
+                    ['creative commons: attribution 4.0', 'by/4.0'],
+                    ['creative commons: attribution - non derived work 4.0', 'by-nd/4.0'],
+                    ['creative commons: attribution - non derived work - non commercial 4.0', 'by-nc-nd/4.0'],
+                    ['creative commons: attribution - non commercial 4.0', 'by-nc/4.0'],
+                    ['creative commons: attribution - non commercial - share alike 4.0', 'by-nc-sa/4.0'],
+                    ['creative commons: attribution - share alike 4.0', 'by-sa/4.0'],
+                    ['creative commons: attribution 3.0', 'by/3.0'],
+                    ['creative commons: attribution - non derived work 3.0', 'by-nd/3.0'],
+                    ['creative commons: attribution - non derived work - non commercial 3.0', 'by-nc-nd/3.0'],
+                    ['creative commons: attribution - non commercial 3.0', 'by-nc/3.0'],
+                    ['creative commons: attribution - non commercial - share alike 3.0', 'by-nc-sa/3.0'],
+                    ['creative commons: attribution - share alike 3.0', 'by-sa/3.0'],
+                    ['creative commons: attribution 2.5', 'by/2.5'],
+                    ['creative commons: attribution - non derived work 2.5', 'by-nd/2.5'],
+                    ['creative commons: attribution - non derived work - non commercial 2.5', 'by-nc-nd/2.5'],
+                    ['creative commons: attribution - non commercial 2.5', 'by-nc/2.5'],
+                    ['creative commons: attribution - non commercial - share alike 2.5', 'by-nc-sa/2.5'],
+                    ['creative commons: attribution - share alike 2.5', 'by-sa/2.5']
+                ];
+                for (var i = 0; i < licenseMappings.length; i++) {
+                    if (licenseMappings[i][0] === license) {
+                        var type = licenseMappings[i][1].replace('/', ' ').toUpperCase();
+                        var css = 'cc cc-' + licenseMappings[i][1].split('/')[0];
+                        formattedLicense = '<a href="https://creativecommons.org/licenses/' + licenseMappings[i][1] + '/" rel="license" class="' + css + '"><span></span>Creative Commons ' + type + '</a>';
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Update DOM elements safely
+        var tempDiv = document.createElement('div');
+        
+        var titles = document.querySelectorAll('.exe-prop-title');
+        for (var i = 0; i < titles.length; i++) {
+            tempDiv.textContent = title;
+            titles[i].innerHTML = tempDiv.innerHTML;
+        }
+
+        var authors = document.querySelectorAll('.exe-prop-author');
+        for (var j = 0; j < authors.length; j++) {
+            tempDiv.textContent = author;
+            authors[j].innerHTML = tempDiv.innerHTML;
+        }
+
+        var descriptions = document.querySelectorAll('.exe-prop-description');
+        for (var k = 0; k < descriptions.length; k++) {
+            tempDiv.textContent = desc;
+            descriptions[k].innerHTML = tempDiv.innerHTML;
+        }
+
+        var licenses = document.querySelectorAll('.exe-prop-license');
+        for (var l = 0; l < licenses.length; l++) {
+            // License could contain HTML (formatted version), so assign directly
+            // For standard text (e.g. "Public Domain"), we should sanitize, but we trust the internal properties.
+            if (formattedLicense.indexOf('<a') === 0) {
+                licenses[l].innerHTML = formattedLicense;
+            } else {
+                tempDiv.textContent = formattedLicense;
+                licenses[l].innerHTML = tempDiv.innerHTML;
+            }
+        }
+    }
+
+    // Run on script execution (when iDevice is rendered in DOM)
+    syncProperties();
+
+    // To catch dynamic property changes while the Workarea is active without a page reload:
+    // Try to hook into Yjs metadata observer if possible
+    if (typeof window.eXeLearning !== 'undefined' && window.eXeLearning.app && window.eXeLearning.app.yjsBridge) {
+        // Wait for connection and metadata
+        setTimeout(function() {
+            var docMgr = window.eXeLearning.app.yjsBridge.documentManager;
+            if (docMgr) {
+                var metadata = docMgr.getMetadata();
+                if (metadata) {
+                    metadata.observe(function(event) {
+                        var relevantKeys = ['title', 'author', 'description', 'license'];
+                        var needsUpdate = false;
+                        if (event.changes && event.changes.keys) {
+                            event.changes.keys.forEach(function(change, key) {
+                                if (relevantKeys.indexOf(key) !== -1) {
+                                    needsUpdate = true;
+                                }
+                            });
+                        }
+                        if (needsUpdate) {
+                            syncProperties();
+                        }
+                    });
+                }
+            }
+        }, 1000);
+    }
+})();
